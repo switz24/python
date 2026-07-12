@@ -1,4 +1,5 @@
-/.DS_Store
-/Qr code Generator
-/applic
-/Tokey.py
+Token.py
+.env
+__pycache__/
+*.pyc
+.DS_Store
