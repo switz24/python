@@ -16,6 +16,7 @@ pause / pauses the audio
 resume / resumes the audio
 stop / stops the audio playback alltogether
 qr <link> / generates a qr code for the given link
+gif <term you want to search for>
 swift / dont use this
 
 note!
