@@ -10,12 +10,14 @@ import qrcode
 
 import yt_dlp as youtube_dl
 import asyncio
+import aiohttp
 
 import random
 
-#delete these two lines to set up as your own
+#delete these three lines to set up as your own or als add a Token.py file with your token and text channel id
 from Token import Token_Here
 from Token import Text_Channel_ID_Here
+from Token import Giphy_Api_Key_Here
 
 Token = Token_Here
 
@@ -150,14 +152,31 @@ async def resume(ctx):
 
 
 #help
-
-
-
 @bot.command()
 async def h(ctx):
    await ctx.send (f"{h_message}")
 
 h_message = "Hier sind die verfügbaren Befehle:\n- `!join`: Tritt dem Voice-Channel bei\n- `!leave`: Verlässt den Voice-Channel\n- `!qr <text>`: Erstellt einen QR-Code mit dem angegebenen Text\n- `!play <url>`: Spielt Musik aus einer URL ab\n- `!stop`: Stoppt die Wiedergabe\n- `!pause`: Pausiert die Wiedergabe\n- `!resume`: Setzt die Wiedergabe fort"
+
+#cat
+@bot.command()
+async def cat(ctx):
+    await ctx.send("https://cataas.com/cat/gif")
+
+
+#gif
+@bot.command()
+async def gif(ctx, *, text):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"https://api.giphy.com/v1/gifs/search?api_key={Giphy_Api_Key_Here}&q={text}&limit=1") as response:
+            data = await response.json()
+            if data['data']:
+                gif_url = data['data'][0]['images']['original']['url']
+                await ctx.send(gif_url)
+            else:
+                await ctx.send("Kein GIF gefunden.")
+
+
 
 
 bot.run(Token)
