@@ -3,3 +3,7 @@ Token.py
 __pycache__/
 *.pyc
 .DS_Store
+Qr code Generator/Qr code
+Qr code Generator/qrcode.png
+applic/main.qml
+applic/aw
