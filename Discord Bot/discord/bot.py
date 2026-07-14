@@ -19,6 +19,12 @@ from Token import Token_Here
 from Token import Text_Channel_ID_Here
 from Token import Giphy_Api_Key_Here
 
+# initialize music queue mapping (avoid undefined variable)
+music_queue = {}
+music_queue[1525826980065443970] = []
+
+guild_id = ()
+
 Token = Token_Here
 
 intents = discord.Intents.default()
@@ -94,8 +100,6 @@ async def qr (ctx, *, text):
     await ctx.send("Hier ist dein QR-Code:", file=send)
 
 
-#music
-
 @bot.command()
 async def play(ctx, url):
     if ctx.author.voice is None:
@@ -119,11 +123,28 @@ async def play(ctx, url):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
         url2 = info['url']
+        dauer = info.get('duration') or 0
 
     ctx.voice_client.stop()
     ctx.voice_client.play(discord.FFmpegPCMAudio(url2), after=lambda e: print(f'Player error: {e}') if e else None)
+   
+    await asyncio.sleep (dauer)
+    
+    guild_id = ctx.guild.id
+    if music_queue.get(guild_id):
+        naechster = music_queue[guild_id].pop(0)
+        
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info2 = ydl.extract_info(naechster, download=False)
+            url3 = info2['url']
 
-    await ctx.send(f"Spiele jetzt: {info['title']}")
+        ctx.voice_client.play(
+            discord.FFmpegPCMAudio(url3),
+            after=lambda e: print(f'Player error: {e}') if e else None
+        )
+        await ctx.send(f"Spiele jetzt: {info2.get('title', 'Unbekannt')}")
+
+    
 
 
 @bot.command()
@@ -149,6 +170,53 @@ async def resume(ctx):
         await ctx.send("Die Wiedergabe wurde fortgesetzt.")
     else:
         await ctx.send("Der Bot ist nicht pausiert.")
+
+
+#queue aber noch nicht implementiert
+@bot.command()
+async def queue(ctx, url):
+    if ctx.voice_client is None:
+        await ctx.send("Der Bot ist in keinem Voice-Channel.")
+        return
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+    }
+
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        url2 = info['url']
+        title = info.get('title', 'Unbekannter Titel')
+
+    guild_id = ctx.guild.id
+    if guild_id not in music_queue:
+        music_queue[guild_id] = []
+
+    music_queue[guild_id].append({'url': url2, 'title': title})
+    await ctx.send(f"Zum Queue hinzugefügt: {title}")
+            
+@bot.command()
+async def show_queue(ctx):
+    guild_id = ctx.guild.id
+    if guild_id not in music_queue or not music_queue[1525826980065443970]:
+        await ctx.send("Queue ist leer")
+        return
+    
+    queue_list = "\n".join([f"{i+1}. {item['title']}" for i, item in enumerate(music_queue[guild_id])])
+    await ctx.send(f"Warteschlange:\n{queue_list}")
+
+
+
+
+        
+        
+
+
 
 
 #help
