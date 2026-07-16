@@ -18,12 +18,12 @@ import random
 from Token import Token_Here
 from Token import Text_Channel_ID_Here
 from Token import Giphy_Api_Key_Here
+from Token import Guild_ID_Here
 
 # initialize music queue mapping (avoid undefined variable)
 music_queue = {}
 music_queue[1525826980065443970] = []
 
-guild_id = ()
 
 Token = Token_Here
 
@@ -133,9 +133,9 @@ async def play(ctx, url):
     guild_id = ctx.guild.id
     if music_queue.get(guild_id):
         naechster = music_queue[guild_id].pop(0)
-        
+
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info2 = ydl.extract_info(naechster, download=False)
+            info2 = ydl.extract_info(naechster['url'], download=False)
             url3 = info2['url']
 
         ctx.voice_client.play(
@@ -203,14 +203,35 @@ async def queue(ctx, url):
 @bot.command()
 async def show_queue(ctx):
     guild_id = ctx.guild.id
-    if guild_id not in music_queue or not music_queue[1525826980065443970]:
+    if guild_id not in music_queue or not music_queue[guild_id]:
         await ctx.send("Queue ist leer")
         return
-    
+
     queue_list = "\n".join([f"{i+1}. {item['title']}" for i, item in enumerate(music_queue[guild_id])])
     await ctx.send(f"Warteschlange:\n{queue_list}")
 
 
+#kick & ban/unban
+@bot.command()
+@commands.has_permissions(kick_members=True)
+async def kick(ctx, nutzer: discord.Member, *, reason: str = None):
+    try:
+        await nutzer.kick(reason=reason)
+        await ctx.send(f"Der User {nutzer.id} wurde erfolgreich gekickt")
+    except Exception as e:
+        await ctx.send(f"Fehler beim Kicken: {e}")
+
+@bot.command()
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, *, nutzer: discord.Member):
+    await nutzer.ban()
+    await ctx.send(f"der User {nutzer.id} wurde gebannt")
+
+@bot.command()
+@commands.has_permissions(ban_members=True)
+async def unban(ctx, *, nutzer: discord.User):
+    await ctx.guild.unban(nutzer)
+    await ctx.send(f"der User{nutzer.id} wurde entbannt")
 
 
         
