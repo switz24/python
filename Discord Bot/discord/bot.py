@@ -22,7 +22,7 @@ from Token import Guild_ID_Here
 
 # initialize music queue mapping (avoid undefined variable)
 music_queue = {}
-music_queue[1525826980065443970] = []
+music_queue[Guild_ID_Here] = []
 
 
 Token = Token_Here
@@ -99,7 +99,7 @@ async def qr (ctx, *, text):
     send = discord.File("qrcode.png")
     await ctx.send("Hier ist dein QR-Code:", file=send)
 
-
+#music play
 @bot.command()
 async def play(ctx, url):
     if ctx.author.voice is None:
@@ -204,7 +204,7 @@ async def queue(ctx, url):
 async def show_queue(ctx):
     guild_id = ctx.guild.id
     if guild_id not in music_queue or not music_queue[guild_id]:
-        await ctx.send("Queue ist leer")
+        await ctx.send("Die Queue ist leer")
         return
 
     queue_list = "\n".join([f"{i+1}. {item['title']}" for i, item in enumerate(music_queue[guild_id])])
@@ -233,11 +233,38 @@ async def unban(ctx, *, nutzer: discord.User):
     await ctx.guild.unban(nutzer)
     await ctx.send(f"der User{nutzer.id} wurde entbannt")
 
+#channel erstellen und löschen
+@bot.command()
+async def channel (ctx, *, naawme: str = "ticket"):
+    await ctx.guild.create_text_channel(naawme)
+    await ctx.send(f"Der Kanal \"{naawme}\" wurde erstellt.")
 
-        
-        
+@bot.command()
+async def channel_delete(ctx, *, naawme: str = "ticket"):
+    channel = discord.utils.get(ctx.guild.text_channels, name=naawme)
+    if channel is None:
+        await ctx.send(f"Der Kanal \"{naawme}\" wurde nicht gefunden.")
+        return
+
+    await channel.delete()
+    await ctx.send(f"Der Kanal \"{naawme}\" wurde gelöscht.")
 
 
+@bot.command()
+async def vc(ctx, *, naawme: str = "ticket"):
+    await ctx.guild.create_voice_channel(naawme)
+    await ctx.send(f"Der Voice Channel \"{naawme}\" wurde erstellt ")
+
+
+@bot.command()
+async def vc_delete(ctx, *, naawme: str = "ticket"):
+    vc = discord.utils.get(ctx.guild.voice_channels, name=naawme)
+    if vc is None:
+     await ctx.send(f"Der Vc  \"{naawme}\" wurde nicht gefunden")
+     return
+
+    await vc.delete()
+    await ctx.send(f" Der Vc  \"{naawme}\" wurde gelöscht")
 
 
 #help
@@ -265,6 +292,11 @@ async def gif(ctx, *, text):
             else:
                 await ctx.send("Kein GIF gefunden.")
 
+
+
+@bot.event
+async def on_member_join(ctx, member = True):
+    await ctx.send(f"Willst du auf die Insel kommen?")
 
 
 
